@@ -1,6 +1,6 @@
 {
   "name": "mcp-expect",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "Jest-style assertions for testing MCP (Model Context Protocol) servers.",
   "type": "module",
   "main": "dist/src/index.js",
