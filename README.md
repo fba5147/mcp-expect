@@ -4,6 +4,8 @@
 
 Jest-style assertions for testing MCP (Model Context Protocol) servers.
 
+![mcp-testing-kit running the example suite, then showing a failing assertion](./assets/demo.gif)
+
 ```ts
 defineTest("search tool", { command: "node", args: ["server.js"] }, async ({ expect }) => {
   await expect.tool("search").exists();
