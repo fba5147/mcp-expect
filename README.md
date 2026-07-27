@@ -142,6 +142,15 @@ file so it doesn't turn the main demo (or CI) red:
 npm run demo:fail
 ```
 
+Not convinced a testing library that only tests its own demo server proves
+anything? `example/real-server.mcptest.ts` runs the same four assertions
+against [`@modelcontextprotocol/server-everything`](https://www.npmjs.com/package/@modelcontextprotocol/server-everything),
+the official MCP reference server maintained independently of this project:
+
+```bash
+npm run test:real-server
+```
+
 ## What this is not (v1 scope)
 
 - Not a multi-model grading harness — it doesn't judge how well an LLM
