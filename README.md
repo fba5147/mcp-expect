@@ -164,6 +164,21 @@ npm run test:everything-server
 npm run test:filesystem-server
 ```
 
+## Releasing
+
+Publishing to npm is automated via [`.github/workflows/publish.yml`](.github/workflows/publish.yml)
+using npm's OIDC trusted publishing — no long-lived npm token is stored in
+the repo. To cut a release:
+
+```bash
+npm version patch   # or minor / major — updates package.json and creates a git tag
+git push --follow-tags
+```
+
+The workflow verifies the pushed tag matches `package.json`'s version, runs
+the full test suite (local demo + both real-server suites), and then
+publishes. If any of that fails, nothing gets published.
+
 ## What this is not (v1 scope)
 
 - Not a multi-model grading harness — it doesn't judge how well an LLM
