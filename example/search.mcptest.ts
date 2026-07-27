@@ -25,8 +25,3 @@ defineTest("search tool returns the expected shape", server, async ({ expect }) 
     .withInput({ query: "hello" })
     .returnsSchema({ results: "array", count: "number" });
 });
-
-// A deliberately failing test so the demo shows what a red result looks like too.
-defineTest("search tool (intentionally wrong expectation)", server, async ({ expect }) => {
-  await expect.tool("search").withInput({ query: "hello" }).respondsWithin(1);
-});

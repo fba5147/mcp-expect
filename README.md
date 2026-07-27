@@ -1,5 +1,7 @@
 # mcp-testing-kit
 
+[![CI](https://github.com/fba5147/mcp-testing/actions/workflows/ci.yml/badge.svg)](https://github.com/fba5147/mcp-testing/actions/workflows/ci.yml)
+
 Jest-style assertions for testing MCP (Model Context Protocol) servers.
 
 ```ts
@@ -125,12 +127,19 @@ on the PR diff, not just in the log.
 ## Working example
 
 See [`example/`](./example) for a complete demo: a small MCP server exposing
-a `search` tool, and a test file exercising all four assertions (including one
-intentionally-failing test, so you can see what a red result looks like).
+a `search` tool, and a test file exercising all four assertions.
 
 ```bash
 npm install
 npm run test:example
+```
+
+Want to see what a failing assertion looks like? `example/red-demo.mcptest.ts`
+is the same server with one deliberately-wrong expectation, kept in its own
+file so it doesn't turn the main demo (or CI) red:
+
+```bash
+npm run demo:fail
 ```
 
 ## What this is not (v1 scope)

@@ -12,8 +12,18 @@
     "dist/src"
   ],
   "scripts": {
-    "build": "tsc -p tsconfig.json",
-    "test:example": "npm run build && node dist/src/cli.js \"dist/example/*.mcptest.js\""
+    "build": "tsc -p tsconfig.json && chmod +x dist/src/cli.js",
+    "test:example": "npm run build && node dist/src/cli.js \"dist/example/search.mcptest.js\"",
+    "demo:fail": "npm run build && node dist/src/cli.js \"dist/example/red-demo.mcptest.js\"",
+    "prepublishOnly": "npm run build"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/fba5147/mcp-testing.git"
+  },
+  "homepage": "https://github.com/fba5147/mcp-testing#readme",
+  "bugs": {
+    "url": "https://github.com/fba5147/mcp-testing/issues"
   },
   "keywords": [
     "mcp",
