@@ -1,10 +1,10 @@
-# mcp-testing-kit
+# mcp-expect
 
 [![CI](https://github.com/fba5147/mcp-testing/actions/workflows/ci.yml/badge.svg)](https://github.com/fba5147/mcp-testing/actions/workflows/ci.yml)
 
 Jest-style assertions for testing MCP (Model Context Protocol) servers.
 
-![mcp-testing-kit running the example suite, then showing a failing assertion](./assets/demo.gif)
+![mcp-expect running the example suite, then showing a failing assertion](./assets/demo.gif)
 
 ```ts
 defineTest("search tool", { command: "node", args: ["server.js"] }, async ({ expect }) => {
@@ -39,7 +39,7 @@ discover them at runtime.
 ## Install
 
 ```bash
-npm install --save-dev mcp-testing-kit zod
+npm install --save-dev mcp-expect zod
 ```
 
 ## Quickstart
@@ -48,7 +48,7 @@ npm install --save-dev mcp-testing-kit zod
 
 ```ts
 // search.mcptest.ts
-import { defineTest } from "mcp-testing-kit";
+import { defineTest } from "mcp-expect";
 
 const server = { command: "node", args: ["./dist/server.js"] };
 
@@ -60,7 +60,7 @@ defineTest("search tool is registered", server, async ({ expect }) => {
 2. Run it:
 
 ```bash
-npx mcp-testing-kit "dist/**/*.mcptest.js"
+npx mcp-expect "dist/**/*.mcptest.js"
 ```
 
 You'll get colored pass/fail output and a non-zero exit code on failure, so it
@@ -119,7 +119,7 @@ Schema validation — v1 scope is a quick shape check, not a validator.
 ## Running in GitHub Actions
 
 ```yaml
-- run: npx mcp-testing-kit "dist/**/*.mcptest.js"
+- run: npx mcp-expect "dist/**/*.mcptest.js"
 ```
 
 When `GITHUB_ACTIONS=true` is set (which GitHub does automatically), failures
