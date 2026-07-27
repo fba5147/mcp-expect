@@ -145,12 +145,23 @@ npm run demo:fail
 ```
 
 Not convinced a testing library that only tests its own demo server proves
-anything? `example/real-server.mcptest.ts` runs the same four assertions
-against [`@modelcontextprotocol/server-everything`](https://www.npmjs.com/package/@modelcontextprotocol/server-everything),
-the official MCP reference server maintained independently of this project:
+anything? It's also run against two of the official MCP reference servers,
+maintained independently of this project — deliberately different from each
+other and from the demo server, to shake out transport and schema quirks:
+
+- [`@modelcontextprotocol/server-everything`](https://www.npmjs.com/package/@modelcontextprotocol/server-everything)
+  (`example/real-server.mcptest.ts`) — a stdio server with no startup
+  arguments, returning `structuredContent` shaped as a flat object.
+- [`@modelcontextprotocol/server-filesystem`](https://www.npmjs.com/package/@modelcontextprotocol/server-filesystem)
+  (`example/filesystem-server.mcptest.ts`) — takes a startup argument (the
+  allowed directory), rejects invalid input two different ways (bad argument
+  type *and* a path outside the sandbox, both surfaced as `isError: true`
+  rather than a thrown error), and nests its result under a `content` string
+  instead of an object.
 
 ```bash
-npm run test:real-server
+npm run test:everything-server
+npm run test:filesystem-server
 ```
 
 ## What this is not (v1 scope)

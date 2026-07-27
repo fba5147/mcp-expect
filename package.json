@@ -12,9 +12,10 @@
     "dist/src"
   ],
   "scripts": {
-    "build": "tsc -p tsconfig.json && chmod +x dist/src/cli.js",
+    "build": "tsc -p tsconfig.json && chmod +x dist/src/cli.js && cp -r example/fixtures dist/example/fixtures",
     "test:example": "npm run build && node dist/src/cli.js \"dist/example/search.mcptest.js\"",
-    "test:real-server": "npm run build && node dist/src/cli.js \"dist/example/real-server.mcptest.js\"",
+    "test:everything-server": "npm run build && node dist/src/cli.js \"dist/example/real-server.mcptest.js\"",
+    "test:filesystem-server": "npm run build && node dist/src/cli.js \"dist/example/filesystem-server.mcptest.js\"",
     "demo:fail": "npm run build && node dist/src/cli.js \"dist/example/red-demo.mcptest.js\"",
     "prepublishOnly": "npm run build"
   },
@@ -41,6 +42,7 @@
   },
   "devDependencies": {
     "@modelcontextprotocol/server-everything": "^2026.7.4",
+    "@modelcontextprotocol/server-filesystem": "^2026.7.10",
     "@types/node": "^22.5.0",
     "typescript": "^5.5.4",
     "zod": "^3.23.8"
