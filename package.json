@@ -17,15 +17,16 @@
     "test:everything-server": "npm run build && node dist/src/cli.js \"dist/example/real-server.mcptest.js\"",
     "test:filesystem-server": "npm run build && node dist/src/cli.js \"dist/example/filesystem-server.mcptest.js\"",
     "demo:fail": "npm run build && node dist/src/cli.js \"dist/example/red-demo.mcptest.js\"",
+    "coverage": "npm run build && c8 --include \"dist/src/**\" --reporter=text --reporter=text-summary node dist/src/cli.js \"dist/example/search.mcptest.js\" \"dist/example/real-server.mcptest.js\" \"dist/example/filesystem-server.mcptest.js\"",
     "prepublishOnly": "npm run build"
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/fba5147/mcp-testing.git"
+    "url": "git+https://github.com/fba5147/mcp-expect.git"
   },
-  "homepage": "https://github.com/fba5147/mcp-testing#readme",
+  "homepage": "https://github.com/fba5147/mcp-expect#readme",
   "bugs": {
-    "url": "https://github.com/fba5147/mcp-testing/issues"
+    "url": "https://github.com/fba5147/mcp-expect/issues"
   },
   "keywords": [
     "mcp",
@@ -45,6 +46,7 @@
     "@modelcontextprotocol/server-everything": "^2026.7.4",
     "@modelcontextprotocol/server-filesystem": "^2026.7.10",
     "@types/node": "^22.5.0",
+    "c8": "^12.0.0",
     "typescript": "^5.5.4",
     "zod": "^3.23.8"
   },
