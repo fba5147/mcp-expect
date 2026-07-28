@@ -233,6 +233,11 @@ publishes. If any of that fails, nothing gets published.
 These may show up in later versions once the core assertion set has proven
 useful in practice. Contributions and issues welcome.
 
+If `mcp-expect` proves useful, the plan is a small family of focused MCP
+developer tools rather than one monolithic framework — published under the
+[`@mcp-expect`](https://www.npmjs.com/org/mcp-expect) npm org as they're
+built. Nothing beyond this package exists yet.
+
 ## License
 
 MIT
