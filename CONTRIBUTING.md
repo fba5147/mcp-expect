@@ -14,25 +14,30 @@ npm install
 
 ## Running the test suites
 
-There's no mocked test harness — every suite spins up a real MCP server and
-talks to it over the real transport.
+Two tiers: fast unit tests against a fake `Client` (`test/`, Node's built-in
+`node:test`), and e2e suites that spin up a real MCP server over a real
+transport (`example/*.mcptest.ts`).
 
 ```bash
-npm run test:example              # local demo server
-npm run test:everything-server    # @modelcontextprotocol/server-everything
-npm run test:filesystem-server    # @modelcontextprotocol/server-filesystem
+npm run test:unit                 # fake-Client unit tests, no real server
+npm run test:example              # local demo server (stdio)
+npm run test:everything-server    # @modelcontextprotocol/server-everything (stdio)
+npm run test:filesystem-server    # @modelcontextprotocol/server-filesystem (stdio)
+npm run test:http-server          # example/http-server.ts (Streamable HTTP)
 npm run demo:fail                 # the one deliberately-failing assertion
-npm run coverage                  # c8 coverage of src/
+npm run coverage                  # c8 coverage of src/, unit + e2e combined
 ```
 
 `npm run build` must pass (`tsc` with `strict: true`) before any of the above will run.
 
 ## Making a change
 
-1. If you're fixing a bug or adding an assertion, add or extend a test in
-   `example/*.mcptest.ts` against a real server — a demo-server tool if the
-   behavior is generic, or one of the reference servers if you're testing
-   how it handles a real-world quirk.
+1. Pick the right tier: extend `test/*.test.ts` with a fake `Client` for
+   assertion-logic edge cases (error branches, malformed results, argument
+   validation), or add/extend a test in `example/*.mcptest.ts` against a
+   real server if you're testing how it handles a real-world quirk (a demo
+   server tool if the behavior is generic, one of the reference servers or
+   the HTTP fixture otherwise).
 2. Keep the existing style: no comments explaining *what* code does, only
    *why* when something is non-obvious. No speculative abstractions for
    features that don't exist yet.
@@ -41,8 +46,8 @@ npm run coverage                  # c8 coverage of src/
    code or a real measurement before writing it down — see the
    "Performance characteristics" section for the standard this project
    holds itself to.
-4. Open a PR. CI runs the full suite (Node 24, all three real-server
-   suites) on every push.
+4. Open a PR. CI runs the full suite (Node 24, unit tests, and all four
+   real-server suites) on every push.
 
 ## Looking for something to work on?
 

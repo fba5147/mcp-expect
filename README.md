@@ -198,6 +198,16 @@ npm install
 npm run test:example
 ```
 
+There's also a fast, isolated unit test suite (`test/`, Node's built-in
+`node:test` runner, no real server involved — a fake `Client` stands in) for
+the assertion logic itself, plus every edge case that's awkward to trigger
+against a real server on demand (a tool with no `outputSchema`, a malformed
+JSON-RPC result, an unknown security category, ...):
+
+```bash
+npm run test:unit
+```
+
 Want to see what a failing assertion looks like? `example/red-demo.mcptest.ts`
 is the same server with one deliberately-wrong expectation, kept in its own
 file so it doesn't turn the main demo (or CI) red:
@@ -220,13 +230,20 @@ other and from the demo server, to shake out transport and schema quirks:
   type *and* a path outside the sandbox, both surfaced as `isError: true`
   rather than a thrown error), and nests its result under a `content` string
   instead of an object.
+- A minimal but spec-correct **Streamable HTTP** server
+  (`example/http-server.ts` + `example/http-server.mcptest.ts`) — every other
+  example here runs over stdio, so this is the only real coverage of the
+  other transport this library supports. The test file starts and stops the
+  server itself, since (per [Server configs](#server-configs)) this library
+  only connects to an HTTP server, it doesn't manage one.
 
-Both of those use `describeServer()` to share one connection across all their
+All three use `describeServer()` to share one connection across all their
 assertions.
 
 ```bash
 npm run test:everything-server
 npm run test:filesystem-server
+npm run test:http-server
 ```
 
 Want proof `.isSafeAgainst()` actually catches a real bug, not just passes
@@ -251,9 +268,12 @@ logic itself:
 
 `describeServer()` avoids paying that cost per test by sharing one
 connection across a group. Measured on the real reference-server suites in
-`example/`: the first test in a group still pays the ~800ms connection cost,
-but every subsequent test in the same group runs in **2-57ms** — a 5-test
-suite that would've taken ~4s sequentially now takes about 1s total.
+`example/`: the first test in a group still pays the ~700-800ms connection
+cost, but every subsequent test in the same group runs in **1-18ms** — a
+7-test suite that would've taken ~5s sequentially now takes about 1s total.
+The Streamable HTTP transport is faster still: ~50ms for the first
+(session-initializing) call, then **2-4ms** per call after — see
+`example/http-server.mcptest.ts`.
 
 Test execution is still **sequential** — independent connections (or
 groups) run one after another, not concurrently. Parallelizing across them
@@ -267,10 +287,10 @@ for colored output, and [`fast-glob`](https://www.npmjs.com/package/fast-glob)
 for test file discovery — not zero, but small and deliberate.
 
 Code coverage (via [`c8`](https://www.npmjs.com/package/c8)) is wired up
-with `npm run coverage`, currently around 66% of statements in `src/`. It
-isn't tracked in CI or published as a badge yet — there's no history to
-compare against, so a single snapshot number would be more decorative than
-useful.
+with `npm run coverage` — it runs both the unit suite and every real-server
+suite together, currently around 90% of statements in `src/`. It isn't
+tracked in CI or published as a badge yet — there's no history to compare
+against, so a single snapshot number would be more decorative than useful.
 
 ## Releasing
 

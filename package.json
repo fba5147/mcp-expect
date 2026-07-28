@@ -13,12 +13,15 @@
   ],
   "scripts": {
     "build": "tsc -p tsconfig.json && chmod +x dist/src/cli.js && cp -r example/fixtures dist/example/fixtures",
+    "test": "npm run test:unit && npm run test:example",
+    "test:unit": "npm run build && node --test dist/test",
     "test:example": "npm run build && node dist/src/cli.js \"dist/example/search.mcptest.js\"",
     "test:everything-server": "npm run build && node dist/src/cli.js \"dist/example/real-server.mcptest.js\"",
     "test:filesystem-server": "npm run build && node dist/src/cli.js \"dist/example/filesystem-server.mcptest.js\"",
+    "test:http-server": "npm run build && node dist/src/cli.js \"dist/example/http-server.mcptest.js\"",
     "demo:fail": "npm run build && node dist/src/cli.js \"dist/example/red-demo.mcptest.js\"",
     "demo:security-fail": "npm run build && node dist/src/cli.js \"dist/example/security-red-demo.mcptest.js\"",
-    "coverage": "npm run build && c8 --include \"dist/src/**\" --reporter=text --reporter=text-summary node dist/src/cli.js \"dist/example/search.mcptest.js\" \"dist/example/real-server.mcptest.js\" \"dist/example/filesystem-server.mcptest.js\"",
+    "coverage": "npm run build && c8 --include \"dist/src/**\" --reporter=text --reporter=text-summary -- sh -c \"node --test dist/test && node dist/src/cli.js dist/example/search.mcptest.js dist/example/real-server.mcptest.js dist/example/filesystem-server.mcptest.js dist/example/http-server.mcptest.js\"",
     "prepublishOnly": "npm run build"
   },
   "repository": {

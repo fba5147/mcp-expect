@@ -2,7 +2,7 @@
 
 ## Test coverage
 
-- [ ] Added or extended a test in `example/*.mcptest.ts` against a real server
+- [ ] Added or extended a unit test (`test/*.test.ts`) or an e2e test in `example/*.mcptest.ts` against a real server
 - [ ] `npm run build` passes (`tsc --strict`)
 - [ ] Ran the affected suite(s) locally and confirmed pass/fail output is correct
 

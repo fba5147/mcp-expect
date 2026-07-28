@@ -36,9 +36,11 @@ jobs:
             exit 1
           fi
 
+      - run: npm run test:unit
       - run: npm run test:example
       - run: npm run test:everything-server
       - run: npm run test:filesystem-server
+      - run: npm run test:http-server
 
       - name: Publish to npm
         run: npm publish --access public --provenance

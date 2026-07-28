@@ -19,7 +19,8 @@ export interface HttpServerConfig {
 
 export type ServerConfig = StdioServerConfig | HttpServerConfig;
 
-function isHttpConfig(config: ServerConfig): config is HttpServerConfig {
+/** @internal Exported only for unit testing — not part of the public API. */
+export function isHttpConfig(config: ServerConfig): config is HttpServerConfig {
   return "url" in config;
 }
 
