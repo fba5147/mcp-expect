@@ -26,6 +26,12 @@ function isHttpConfig(config: ServerConfig): config is HttpServerConfig {
 export interface ConnectedServer {
   client: Client;
   close: () => Promise<void>;
+  /**
+   * Accumulated stderr from the child process so far. Always empty for an
+   * HTTP connection. Buffered rather than inherited so a passing run stays
+   * quiet — the runner only surfaces this when a test actually fails.
+   */
+  getStderr: () => string;
 }
 
 /**
@@ -47,6 +53,7 @@ export async function connectToServer(config: ServerConfig): Promise<ConnectedSe
       close: async () => {
         await client.close();
       },
+      getStderr: () => "",
     };
   }
 
@@ -54,12 +61,20 @@ export async function connectToServer(config: ServerConfig): Promise<ConnectedSe
     command: config.command,
     args: config.args ?? [],
     env: config.env,
+    stderr: "pipe",
   });
+
+  let stderrBuffer = "";
+  transport.stderr?.on("data", (chunk: Buffer) => {
+    stderrBuffer += chunk.toString();
+  });
+
   await client.connect(transport);
   return {
     client,
     close: async () => {
       await client.close();
     },
+    getStderr: () => stderrBuffer,
   };
 }

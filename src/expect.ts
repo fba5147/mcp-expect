@@ -1,5 +1,7 @@
 import type { Client } from "@modelcontextprotocol/sdk/client/index.js";
+import { Ajv } from "ajv";
 import { MCPAssertionError } from "./errors.js";
+import { SECURITY_PAYLOADS, type SecurityCategory } from "./security-payloads.js";
 
 /** Shallow type descriptor used by `.returnsSchema()`. Intentionally not full JSON Schema for v1. */
 export type ShapeSpec = Record<string, "string" | "number" | "boolean" | "array" | "object">;
@@ -132,6 +134,96 @@ export class ToolAssertion {
         actual: value,
         hint: mismatches.join("; "),
       });
+    }
+  }
+
+  /**
+   * Asserts the tool's result matches the JSON Schema it declares itself in
+   * `outputSchema` (via `tools/list`) — no manual shape spec needed. Fails
+   * loudly if the tool doesn't declare one; use `.returnsSchema()` instead
+   * for tools that don't.
+   */
+  async matchesOutputSchema(): Promise<void> {
+    const { tools } = await this.client.listTools();
+    const tool = tools.find((t) => t.name === this.toolName);
+    if (!tool) {
+      throw new MCPAssertionError(`Tool "${this.toolName}" was not found on the server`, {
+        expected: this.toolName,
+        actual: tools.map((t) => t.name),
+      });
+    }
+    const outputSchema = (tool as { outputSchema?: object }).outputSchema;
+    if (!outputSchema) {
+      throw new MCPAssertionError(`Tool "${this.toolName}" does not declare an outputSchema`, {
+        hint: "Use .returnsSchema({...}) for a shallow manual shape check instead, or add an outputSchema to the tool's registration on the server.",
+      });
+    }
+
+    const result: any = await this.client.callTool({ name: this.toolName, arguments: this.input });
+    if (result?.isError) {
+      throw new MCPAssertionError(`Tool "${this.toolName}" returned an error result instead of data`, {
+        actual: result.content,
+      });
+    }
+    const value = extractResultValue(result);
+
+    const ajv = new Ajv({ strict: false });
+    const validate = ajv.compile(outputSchema);
+    if (!validate(value)) {
+      throw new MCPAssertionError(`Tool "${this.toolName}" result did not match its own declared outputSchema`, {
+        expected: outputSchema,
+        actual: value,
+        hint: (validate.errors ?? [])
+          .map((e: { instancePath: string; message?: string }) => `${e.instancePath || "(root)"} ${e.message}`)
+          .join("; "),
+      });
+    }
+  }
+
+  /**
+   * Fuzzes the given input field with known malicious payloads (path
+   * traversal, command injection, ...) and asserts every one is rejected,
+   * either via `isError: true` or a thrown protocol error. Any payload that
+   * gets through is a real finding — the tool is likely passing this field
+   * unchecked into a filesystem or shell call.
+   */
+  async isSafeAgainst(field: string, categories: SecurityCategory | SecurityCategory[]): Promise<void> {
+    const categoryList = Array.isArray(categories) ? categories : [categories];
+    const accepted: Array<{ category: SecurityCategory; payload: string; actual: unknown }> = [];
+
+    for (const category of categoryList) {
+      const payloads = SECURITY_PAYLOADS[category];
+      if (!payloads) {
+        throw new MCPAssertionError(`Unknown security category "${category}"`, {
+          expected: Object.keys(SECURITY_PAYLOADS).join(", "),
+          actual: category,
+        });
+      }
+      for (const payload of payloads) {
+        const input = { ...this.input, [field]: payload };
+        try {
+          const result: any = await this.client.callTool({ name: this.toolName, arguments: input });
+          if (!result?.isError) {
+            accepted.push({ category, payload, actual: result?.content ?? result });
+          }
+        } catch {
+          // Thrown here means the SDK/server rejected the call at the
+          // protocol level — that counts as safe, same as rejectsInvalidInput().
+        }
+      }
+    }
+
+    if (accepted.length > 0) {
+      throw new MCPAssertionError(
+        `Tool "${this.toolName}" accepted ${accepted.length} malicious payload(s) in "${field}" instead of rejecting them`,
+        {
+          expected: "isError: true, or a thrown error, for every payload",
+          actual: accepted
+            .map((a) => `[${a.category}] ${JSON.stringify(a.payload)} -> ${JSON.stringify(a.actual)}`)
+            .join("\n"),
+          hint: "The handler is likely passing this field into a filesystem or shell call without validating it — that's the exact bug class behind a large share of real-world MCP server vulnerabilities.",
+        },
+      );
     }
   }
 }

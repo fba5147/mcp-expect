@@ -106,8 +106,29 @@ Two transports are supported out of the box:
 { url: "http://localhost:3000/mcp", headers: { Authorization: "Bearer ..." } }
 ```
 
-A fresh connection is made per test and closed afterward, so tests don't leak
-state into one another.
+A fresh connection is made per `defineTest` and closed afterward, so tests
+don't leak state into one another. If you have several tests against the
+same server, `describeServer()` groups them under **one shared connection**
+instead — see [Performance characteristics](#performance-characteristics).
+
+```ts
+import { describeServer } from "mcp-expect";
+
+describeServer({ command: "node", args: ["server.js"] }, (defineTest) => {
+  defineTest("search exists", async ({ expect }) => {
+    await expect.tool("search").exists();
+  });
+
+  defineTest("search responds", async ({ expect }) => {
+    await expect.tool("search").withInput({ query: "hi" }).respondsWithin(1000);
+  });
+});
+```
+
+The `defineTest` you get, whether top-level or scoped inside
+`describeServer`, supports `.only(...)` (run just this test, skipping every
+other test in the whole invocation) and `.skip(...)` (never run it), for
+focusing during debugging.
 
 ## API reference
 
@@ -141,8 +162,31 @@ assertion fails — that's a sign your input schema is too loose.
 ### `.returnsSchema(shape)`
 
 Asserts the result matches a **shallow** shape, e.g.
-`{ results: "array", count: "number" }`. This is intentionally not full JSON
-Schema validation — v1 scope is a quick shape check, not a validator.
+`{ results: "array", count: "number" }`. Intentionally not full JSON Schema
+validation — a quick shape check, not a validator. See `.matchesOutputSchema()`
+below for the real thing.
+
+### `.matchesOutputSchema()`
+
+Asserts the result validates against the tool's **own declared `outputSchema`**
+(from `tools/list`), using [`ajv`](https://www.npmjs.com/package/ajv) — full
+JSON Schema validation, no shape spec to write yourself. Throws a clear error
+if the tool doesn't declare an `outputSchema` at all; use `.returnsSchema()`
+for those.
+
+### `.isSafeAgainst(field, categories)`
+
+Fuzzes the given input field with known malicious payloads —
+`"path-traversal"` and/or `"command-injection"` — and asserts every one is
+rejected (`isError: true`, or a thrown error). Any payload that gets through
+is a real finding: the failure message includes exactly which payload
+succeeded and what the server returned. This is a narrow smoke test for the
+single most common class of real-world MCP tool bug (an argument passed
+unchecked into a filesystem or shell call), not a general security scanner.
+
+```ts
+await expect.tool("read_file").withInput({ path: "safe.txt" }).isSafeAgainst("path", "path-traversal");
+```
 
 ## Working example
 
@@ -177,33 +221,53 @@ other and from the demo server, to shake out transport and schema quirks:
   rather than a thrown error), and nests its result under a `content` string
   instead of an object.
 
+Both of those use `describeServer()` to share one connection across all their
+assertions.
+
 ```bash
 npm run test:everything-server
 npm run test:filesystem-server
 ```
 
+Want proof `.isSafeAgainst()` actually catches a real bug, not just passes
+against servers that are already safe? `example/vulnerable-demo-server.ts` is
+a deliberately naive tool (interpolates unchecked input into a shell command)
+and `example/security-red-demo.mcptest.ts` shows the assertion catching it —
+including the leaked `whoami` output proving the command actually ran:
+
+```bash
+npm run demo:security-fail
+```
+
 ## Performance characteristics
 
-Each `defineTest` opens a fresh connection before running its assertion, so
-per-test wall time is dominated by process startup, not the assertion logic
-itself:
+A plain `defineTest` opens a fresh connection before running its assertion,
+so per-test wall time is dominated by process startup, not the assertion
+logic itself:
 
 - Local stdio server (already-installed binary): ~300-370ms per test
 - Server launched via `npx` (like the reference servers above): ~700-820ms
   per test, mostly `npx`'s own resolution overhead, not this library
 
-Test execution is currently **sequential** — a file with several
-`defineTest` calls runs them one after another, each with its own server
-connection. Parallelizing across independent connections is a reasonable
-future improvement; it isn't built yet, so this README doesn't claim it.
+`describeServer()` avoids paying that cost per test by sharing one
+connection across a group. Measured on the real reference-server suites in
+`example/`: the first test in a group still pays the ~800ms connection cost,
+but every subsequent test in the same group runs in **2-57ms** — a 5-test
+suite that would've taken ~4s sequentially now takes about 1s total.
+
+Test execution is still **sequential** — independent connections (or
+groups) run one after another, not concurrently. Parallelizing across them
+is a reasonable future improvement; it isn't built yet, so this README
+doesn't claim it.
 
 Runtime dependencies are `@modelcontextprotocol/sdk` (the client you're
-already relying on to talk to the server), [`chalk`](https://www.npmjs.com/package/chalk)
+already relying on to talk to the server), [`ajv`](https://www.npmjs.com/package/ajv)
+for `.matchesOutputSchema()`, [`chalk`](https://www.npmjs.com/package/chalk)
 for colored output, and [`fast-glob`](https://www.npmjs.com/package/fast-glob)
 for test file discovery — not zero, but small and deliberate.
 
 Code coverage (via [`c8`](https://www.npmjs.com/package/c8)) is wired up
-with `npm run coverage`, currently around 64% of statements in `src/`. It
+with `npm run coverage`, currently around 66% of statements in `src/`. It
 isn't tracked in CI or published as a badge yet — there's no history to
 compare against, so a single snapshot number would be more decorative than
 useful.
@@ -227,8 +291,10 @@ publishes. If any of that fails, nothing gets published.
 
 - Not a multi-model grading harness — it doesn't judge how well an LLM
   interprets your tool descriptions.
-- Not full JSON Schema validation — `.returnsSchema()` is a shallow check.
-- Not a registry, discovery tool, or security scanner.
+- Not a general fuzzer — `.isSafeAgainst()` checks a small, curated set of
+  known path-traversal and command-injection payloads, not arbitrary input
+  generation.
+- Not a registry or discovery tool.
 
 These may show up in later versions once the core assertion set has proven
 useful in practice. Contributions and issues welcome.
