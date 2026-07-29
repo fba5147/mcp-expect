@@ -17,12 +17,36 @@ Show
 
 Type "npm run test:example"
 Enter
-Sleep 5s
+Sleep 3500ms
 
 Sleep 1500ms
+Hide
+Type "clear"
+Enter
+Show
+
+Type "npm run test:filesystem-server"
+Enter
+Sleep 3500ms
+
+Sleep 1500ms
+Hide
+Type "clear"
+Enter
+Show
 
 Type "npm run demo:fail"
 Enter
-Sleep 4s
+Sleep 3500ms
+
+Sleep 1500ms
+Hide
+Type "clear"
+Enter
+Show
+
+Type "npm run demo:security-fail"
+Enter
+Sleep 3500ms
 
 Sleep 2500ms

@@ -324,6 +324,8 @@ These may show up in later versions once the core assertion set has proven
 useful in practice. Contributions and issues welcome — see
 [CONTRIBUTING.md](./CONTRIBUTING.md), or pick up a
 [good first issue](https://github.com/fba5147/mcp-expect/labels/good%20first%20issue).
+Found a real vulnerability? See [SECURITY.md](./SECURITY.md) instead of
+opening a public issue.
 
 If `mcp-expect` proves useful, the plan is a small family of focused MCP
 developer tools rather than one monolithic framework — published under the
