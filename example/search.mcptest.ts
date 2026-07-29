@@ -24,4 +24,10 @@ describeServer({ command: "node", args: [serverScript] }, (defineTest) => {
       .withInput({ query: "hello" })
       .returnsSchema({ results: "array", count: "number" });
   });
+
+  // .skip() never runs; reported separately from pass/fail. Kept here (rather
+  // than only documented) so the example itself proves the feature works.
+  defineTest.skip("not implemented yet", async ({ expect }) => {
+    await expect.tool("search").exists();
+  });
 });

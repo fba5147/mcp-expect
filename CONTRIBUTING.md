@@ -14,12 +14,13 @@ npm install
 
 ## Running the test suites
 
-Two tiers: fast unit tests against a fake `Client` (`test/`, Node's built-in
-`node:test`), and e2e suites that spin up a real MCP server over a real
-transport (`example/*.mcptest.ts`).
+Two tiers: `test/` (Node's built-in `node:test`) — mostly fake-`Client` unit
+tests, plus a few that spawn the real compiled CLI as a black box — and e2e
+suites in `example/*.mcptest.ts` that spin up a real MCP server over a real
+transport.
 
 ```bash
-npm run test:unit                 # fake-Client unit tests, no real server
+npm run test:unit                 # test/ — fake-Client unit tests + real-CLI-process tests
 npm run test:example              # local demo server (stdio)
 npm run test:everything-server    # @modelcontextprotocol/server-everything (stdio)
 npm run test:filesystem-server    # @modelcontextprotocol/server-filesystem (stdio)

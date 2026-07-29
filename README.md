@@ -198,11 +198,13 @@ npm install
 npm run test:example
 ```
 
-There's also a fast, isolated unit test suite (`test/`, Node's built-in
-`node:test` runner, no real server involved — a fake `Client` stands in) for
-the assertion logic itself, plus every edge case that's awkward to trigger
-against a real server on demand (a tool with no `outputSchema`, a malformed
-JSON-RPC result, an unknown security category, ...):
+There's also a fast unit test suite (`test/`, Node's built-in `node:test`
+runner) for everything that's awkward to trigger against a real server on
+demand — most of it against a fake `Client` (a tool with no `outputSchema`,
+a malformed JSON-RPC result, an unknown security category, the `.only()`/
+`.skip()` registry logic, ...), and a handful spawning the real compiled CLI
+binary as a black box (usage errors, a glob matching nothing, the
+`GITHUB_ACTIONS` annotation, real captured server stderr on failure):
 
 ```bash
 npm run test:unit
@@ -288,7 +290,9 @@ for test file discovery — not zero, but small and deliberate.
 
 Code coverage (via [`c8`](https://www.npmjs.com/package/c8)) is wired up
 with `npm run coverage` — it runs both the unit suite and every real-server
-suite together, currently around 90% of statements in `src/`. It isn't
+suite together, currently around 98% of statements in `src/` (the remaining
+gaps are things like an unreachable top-level crash handler — not worth
+chasing to 100%). It isn't
 tracked in CI or published as a badge yet — there's no history to compare
 against, so a single snapshot number would be more decorative than useful.
 
