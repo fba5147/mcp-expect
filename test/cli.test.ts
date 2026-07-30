@@ -66,7 +66,7 @@ describe("mcp-expect CLI", () => {
     const withCi = await runCli(["dist/test/fixtures/noisy.mcptest.js"], { GITHUB_ACTIONS: "true" });
     assert.match(withCi.stdout, /::error file=.*noisy\.mcptest\.js::/);
 
-    const withoutCi = await runCli(["dist/test/fixtures/noisy.mcptest.js"]);
+    const withoutCi = await runCli(["dist/test/fixtures/noisy.mcptest.js"], { GITHUB_ACTIONS: "" });
     assert.ok(!withoutCi.stdout.includes("::error"));
   });
 
