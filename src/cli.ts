@@ -34,10 +34,24 @@ function printGitHubActionsAnnotation(file: string, error: Error) {
   console.log(`::error file=${path.relative(process.cwd(), file)}::${message}`);
 }
 
+const USAGE = `Usage: mcp-expect <glob pattern> [...more patterns]
+
+Runs *.mcptest.js files matching the given glob pattern(s) and reports
+pass/fail/skip. Exits 1 if any test fails.
+
+Example:
+  mcp-expect "dist/**/*.mcptest.js"`;
+
 async function main() {
   const patterns = process.argv.slice(2);
+
+  if (patterns.includes("--help") || patterns.includes("-h")) {
+    console.log(USAGE);
+    process.exit(0);
+  }
+
   if (patterns.length === 0) {
-    console.error(chalk.red("Usage: mcp-expect <glob pattern> [...more patterns]"));
+    console.error(chalk.red(USAGE));
     process.exit(1);
   }
 

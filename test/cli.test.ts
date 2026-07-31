@@ -40,6 +40,12 @@ describe("mcp-expect CLI", () => {
     assert.match(result.stderr, /Usage: mcp-expect/);
   });
 
+  test("--help: prints usage and exits 0", async () => {
+    const result = await runCli(["--help"]);
+    assert.equal(result.exitCode, 0);
+    assert.match(result.stdout, /Usage: mcp-expect/);
+  });
+
   test("pattern matches nothing: warns, exits 0", async () => {
     const result = await runCli(["dist/nonexistent/*.mcptest.js"]);
     assert.equal(result.exitCode, 0);
